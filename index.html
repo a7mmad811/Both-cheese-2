@@ -3,114 +3,103 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>المحترف الذكي - مدرب الشطرنج</title>
-
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <link rel="stylesheet" href="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css" />
-  <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-  <script src="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"></script>
+  <title>مدرب الشطرنج الذكي</title>
+  
+  <!-- مكتبة قواعد الشطرنج مع رابطين احتياطيين لضمان العمل 100% -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+  <script>
+    if (typeof Chess === 'undefined') {
+      document.write('<script src="https://cdn.jsdelivr.net/npm/chess.js@0.10.3/chess.min.js"><\/script>');
+    }
+  </script>
 
   <style>
-    * { box-sizing: border-box; user-select: none; -webkit-user-select: none; }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
     body {
       margin: 0;
       padding: 8px;
       background: #0f1115;
       color: #f3f4f6;
-      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      font-family: system-ui, -apple-system, sans-serif;
       display: flex;
       flex-direction: column;
       align-items: center;
       min-height: 100vh;
-      overflow-x: hidden;
     }
 
-    /* شريط اختيار اللون والنمط */
     .top-bar {
-      width: 96vw;
-      max-width: 430px;
+      width: 100%;
+      max-width: 420px;
       display: flex;
       gap: 6px;
       margin-bottom: 8px;
     }
-    .side-btn {
+    .btn-side {
       flex: 1;
-      padding: 9px 6px;
+      padding: 9px;
       border-radius: 8px;
-      border: 2px solid #2e3440;
-      background: #1b1f27;
+      border: 2px solid #2d333f;
+      background: #181b22;
       color: #9ca3af;
       font-weight: bold;
       font-size: 13px;
       cursor: pointer;
-      transition: all 0.2s;
     }
-    .side-btn.active {
+    .btn-side.active {
       border-color: #10b981;
       background: #064e3b;
-      color: #ffffff;
+      color: #fff;
     }
     .mode-select {
-      background: #1b1f27;
-      color: #f3f4f6;
-      border: 2px solid #2e3440;
+      background: #181b22;
+      color: #fff;
+      border: 2px solid #2d333f;
       border-radius: 8px;
       padding: 0 8px;
       font-size: 12px;
       font-weight: bold;
     }
 
-    /* لوحة التوجيه والتوقيت البشري */
-    .hud-panel {
-      width: 96vw;
-      max-width: 430px;
+    .hud-box {
+      width: 100%;
+      max-width: 420px;
       background: #181b22;
       border: 1px solid #2d333f;
       border-radius: 10px;
       padding: 10px 12px;
       margin-bottom: 8px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
     }
-    .turn-banner {
+    .turn-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
       font-size: 14px;
-      font-weight: 800;
-      margin-bottom: 6px;
-      padding-bottom: 6px;
-      border-bottom: 1px solid #262b36;
-    }
-    .turn-my { color: #10b981; }
-    .turn-opp { color: #f59e0b; }
-
-    .move-advice {
-      font-size: 13px;
       font-weight: bold;
-      color: #e5e7eb;
       margin-bottom: 6px;
+    }
+    .my-turn { color: #10b981; }
+    .opp-turn { color: #f59e0b; }
+
+    .advice-row {
       display: flex;
       justify-content: space-between;
-      align-items: center;
+      font-size: 13px;
+      font-weight: bold;
+      margin-bottom: 6px;
     }
-    .badge-type {
+    .badge {
       font-size: 11px;
       padding: 2px 8px;
-      border-radius: 12px;
+      border-radius: 10px;
       background: #065f46;
       color: #a7f3d0;
     }
-    .badge-type.inaccuracy {
-      background: #78350f;
-      color: #fde68a;
-    }
+    .badge.inacc { background: #78350f; color: #fde68a; }
 
-    /* شريط عداد التوقيت البشري */
     .timer-wrap {
       background: #0f1115;
       border-radius: 6px;
-      height: 22px;
+      height: 20px;
       position: relative;
       overflow: hidden;
       border: 1px solid #2d333f;
@@ -119,31 +108,29 @@
       height: 100%;
       width: 0%;
       background: linear-gradient(90deg, #f59e0b, #10b981);
-      transition: width 0.2s linear;
+      transition: width 0.15s linear;
     }
-    .timer-text {
+    .timer-txt {
       position: absolute;
-      top: 0; left: 0; right: 0; bottom: 0;
+      inset: 0;
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 11px;
       font-weight: bold;
-      color: #ffffff;
-      text-shadow: 0 1px 2px #000;
+      color: #fff;
     }
 
-    /* حاوية الرقعة وشريط التقييم */
+    /* الرقعة الأصلية الثابتة */
     .arena {
       display: flex;
       gap: 6px;
-      width: 96vw;
-      max-width: 430px;
-      align-items: stretch;
+      width: 100%;
+      max-width: 420px;
     }
     .eval-bar-wrap {
-      width: 18px;
-      background: #262421;
+      width: 16px;
+      background: #27272a;
       border-radius: 6px;
       overflow: hidden;
       display: flex;
@@ -152,86 +139,103 @@
       position: relative;
     }
     .eval-black {
-      background: #27272a;
+      background: #18181b;
       width: 100%;
       height: 50%;
-      transition: height 0.35s ease;
+      transition: height 0.3s;
     }
     .eval-white {
       background: #f4f4f5;
       width: 100%;
       flex: 1;
     }
-    .eval-score {
+    .eval-txt {
       position: absolute;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
       font-size: 9px;
-      font-weight: 800;
+      font-weight: bold;
       color: #10b981;
-      background: rgba(0,0,0,0.85);
-      padding: 2px;
+      background: rgba(0,0,0,0.8);
+      padding: 1px 2px;
       border-radius: 3px;
     }
 
-    .board-container {
-      position: relative;
+    .board-wrapper {
       flex: 1;
+      position: relative;
+      aspect-ratio: 1 / 1;
+      width: 100%;
       border-radius: 8px;
       overflow: hidden;
-      box-shadow: 0 6px 20px rgba(0,0,0,0.65);
-      touch-action: none; /* يمنع اهتزاز الصفحة أثناء سحب القطع على التابلت */
+      box-shadow: 0 6px 20px rgba(0,0,0,0.7);
+      background: #b58863;
     }
-    #board { width: 100%; touch-action: none; }
+    #native-board {
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      grid-template-rows: repeat(8, 1fr);
+      width: 100%;
+      height: 100%;
+    }
+    .sq {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      cursor: pointer;
+    }
+    .sq.light { background-color: #f0d9b5; }
+    .sq.dark { background-color: #b58863; }
+    .sq.selected { background-color: #7fa650 !important; }
+    .sq.last-move { background-color: rgba(245, 158, 11, 0.45) !important; }
+
+    .sq img {
+      width: 85%;
+      height: 85%;
+      pointer-events: none;
+    }
+
     #arrow-canvas {
       position: absolute;
-      top: 0;
-      left: 0;
+      inset: 0;
       width: 100%;
       height: 100%;
       pointer-events: none;
-      z-index: 20;
-    }
-
-    .highlight-sq {
-      box-shadow: inset 0 0 3px 4px rgba(16, 185, 129, 0.9) !important;
-    }
-    .last-move-sq {
-      background-color: rgba(245, 158, 11, 0.35) !important;
+      z-index: 10;
     }
 
     .legend {
       display: flex;
       justify-content: space-between;
-      width: 96vw;
-      max-width: 430px;
+      width: 100%;
+      max-width: 420px;
       margin-top: 6px;
       font-size: 11px;
       color: #9ca3af;
       padding: 0 4px;
     }
 
-    /* أزرار التحكم السفلية */
     .controls {
       display: grid;
       grid-template-columns: 1.3fr 1fr 1fr 1fr;
       gap: 6px;
       margin-top: 8px;
-      width: 96vw;
-      max-width: 430px;
+      width: 100%;
+      max-width: 420px;
     }
-    button.ctrl-btn {
-      padding: 11px 6px;
+    button.btn-ctrl {
+      padding: 11px 4px;
       border: none;
       border-radius: 8px;
       font-size: 12px;
-      font-weight: 800;
+      font-weight: bold;
       color: #fff;
       cursor: pointer;
     }
-    button.ctrl-btn:active { opacity: 0.75; }
-    .btn-play-hint { background: #10b981; color: #052e16 !important; }
+    button.btn-ctrl:active { opacity: 0.75; }
+    .btn-auto { background: #10b981; color: #042f1a !important; }
     .btn-flip { background: #2563eb; }
     .btn-undo { background: #374151; }
     .btn-new { background: #dc2626; }
@@ -239,223 +243,47 @@
 </head>
 <body>
 
-  <!-- اختيار لون اللاعب ونمط التمويه -->
   <div class="top-bar">
-    <button id="side-w" class="side-btn active">⚪ أنا الأبيض</button>
-    <button id="side-b" class="side-btn">⚫ أنا الأسود</button>
-    <select id="play-style" class="mode-select">
-      <option value="stealth">🕵️ محترف مموّه (لا يُكشف)</option>
+    <button id="btn-side-w" class="btn-side active">⚪ أنا الأبيض</button>
+    <button id="btn-side-b" class="btn-side">⚫ أنا الأسود</button>
+    <select id="mode-select" class="mode-select">
+      <option value="stealth">🕵️ مموّه (لا يُكشف)</option>
       <option value="killer">💀 سفاح خارق (100%)</option>
     </select>
   </div>
 
-  <!-- لوحة التوجيه الذكي -->
-  <div class="hud-panel">
-    <div class="turn-banner">
-      <span id="turn-indicator" class="turn-my">🎯 دورك الآن (الأبيض)</span>
-      <span id="engine-status" style="font-size:11px; color:#9ca3af;">⚡ المحرك جاهز</span>
+  <div class="hud-box">
+    <div class="turn-row">
+      <span id="turn-txt" class="my-turn">🎯 دورك الآن (الأبيض)</span>
+      <span style="font-size:11px; color:#10b981;">⚡ النظام نشط</span>
     </div>
-    <div class="move-advice">
-      <span id="advice-text">جاري حساب أفضل خطة...</span>
-      <span id="move-quality" class="badge-type">نقلة محترف</span>
+    <div class="advice-row">
+      <span id="advice-txt">جاري فحص الرقعة...</span>
+      <span id="badge-txt" class="badge">نقلة محترف</span>
     </div>
     <div class="timer-wrap">
       <div id="timer-bar" class="timer-bar"></div>
-      <div id="timer-text" class="timer-text">⏱️ وقت التفكير البشري المقترح</div>
+      <div id="timer-txt" class="timer-txt">⏱️ وقت التفكير المقترح</div>
     </div>
   </div>
 
-  <!-- الرقعة وشريط التقييم -->
   <div class="arena">
     <div class="eval-bar-wrap">
       <div id="eval-black" class="eval-black"></div>
       <div class="eval-white"></div>
-      <div id="eval-text" class="eval-score">0.0</div>
+      <div id="eval-txt" class="eval-txt">0.0</div>
     </div>
 
-    <div class="board-container">
-      <div id="board"></div>
+    <div class="board-wrapper">
+      <div id="native-board"></div>
       <canvas id="arrow-canvas"></canvas>
     </div>
   </div>
 
   <div class="legend">
-    <span><b style="color:#10b981;">━━►</b> النقلة البشرية الفائزة</span>
-    <span><b style="color:#3b82f6;">- - ►</b> نقلة الكمبيوتر القاتلة</span>
+    <span><b style="color:#10b981;">━━►</b> النقلة الفائزة المموّهة</span>
+    <span><b style="color:#3b82f6;">- - ►</b> النقلة الحاسوبية القاتلة</span>
   </div>
 
-  <!-- أزرار التحكم -->
   <div class="controls">
-    <button class="ctrl-btn btn-play-hint" id="btn-auto">⚡ العب السهم</button>
-    <button class="ctrl-btn btn-flip" id="btn-flip">🔃 اقلب</button>
-    <button class="ctrl-btn btn-undo" id="btn-undo">↩️ تراجع</button>
-    <button class="ctrl-btn btn-new" id="btn-new">🔄 جديد</button>
-  </div>
-
-  <script>
-    if (window.Telegram && window.Telegram.WebApp) {
-      window.Telegram.WebApp.expand();
-    }
-
-    const game = new Chess();
-    const boardEl = $('#board');
-    const canvas = document.getElementById('arrow-canvas');
-    const ctx = canvas.getContext('2d');
-
-    let myColor = 'w'; // 'w' للأبيض أو 'b' للأسود
-    let selectedSquare = null;
-    let currentBestMove = null;
-    let currentKillerMove = null;
-    let timerInterval = null;
-    let sfWorker = null;
-    let sfReady = false;
-    let currentAnalysisId = 0;
-
-    // ==================== 1. كتاب افتتاحيات بشري طبيعي ====================
-    const HUMAN_BOOK = {
-      "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -": ["e2e4", "d2d4"],
-      "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq -": ["e7e5", "c7c5", "c7c6"],
-      "rnbqkbnr/pppppppp/8/8/3P4/8/PPP1PPPP/RNBQKBNR b KQkq -": ["d7d5", "g8f6"],
-      "rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR w KQkq -": ["g1f3", "f1c4"],
-      "rnbqkbnr/pp1ppppp/8/2p5/4P3/8/PPPP1PPP/RNBQKBNR w KQkq -": ["g1f3", "b1c3"],
-      "rnbqkbnr/pppp1ppp/8/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq -": ["b8c6", "g8f6"],
-      "r1bqkbnr/pppp1ppp/2n5/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq -": ["f1c4", "f1b5", "d2d4"]
-    };
-
-    // ==================== 2. تحميل محرك Stockfish الخارق بالخلفية ====================
-    function initStockfish() {
-      fetch("https://cdnjs.cloudflare.com/ajax/libs/stockfish.js/10.0.2/stockfish.js")
-        .then(r => r.text())
-        .then(code => {
-          const blob = new Blob([code], { type: "application/javascript" });
-          sfWorker = new Worker(URL.createObjectURL(blob));
-          sfWorker.onmessage = handleStockfishMessage;
-          sfWorker.postMessage("uci");
-          sfWorker.postMessage("setoption name MultiPV value 3");
-          sfWorker.postMessage("isready");
-        })
-        .catch(() => {
-          $('#engine-status').text('⚡ المحرك الداخلي نشط');
-        });
-    }
-
-    let sfCandidates = {};
-    function handleStockfishMessage(e) {
-      const line = e.data;
-      if (line === "readyok") {
-        sfReady = true;
-        $('#engine-status').text('🔥 Stockfish Pro متصل');
-        runAnalysis();
-        return;
-      }
-
-      if (line.startsWith("info") && line.includes(" multipv ") && line.includes(" pv ")) {
-        const mpvMatch = line.match(/multipv (\d+)/);
-        const cpMatch = line.match(/score cp (-?\d+)/);
-        const mateMatch = line.match(/score mate (-?\d+)/);
-        const pvMatch = line.match(/ pv ([a-h][1-8][a-h][1-8][qrbn]?)/);
-
-        if (mpvMatch && pvMatch) {
-          const idx = parseInt(mpvMatch[1]);
-          const uci = pvMatch[1];
-          let score = 0;
-          let isMate = false;
-          if (mateMatch) {
-            isMate = true;
-            const m = parseInt(mateMatch[1]);
-            score = m > 0 ? 99000 - m * 100 : -99000 - m * 100;
-          } else if (cpMatch) {
-            score = parseInt(cpMatch[1]);
-          }
-          sfCandidates[idx] = { uci, score, isMate };
-        }
-      }
-
-      if (line.startsWith("bestmove")) {
-        finalizeStockfishDecision();
-      }
-    }
-
-    // ==================== 3. المحرك التكتيكي الداخلي السريع (Fallback) ====================
-    const pieceVals = { p: 100, n: 320, b: 335, r: 500, q: 900, k: 20000 };
-    const centerSq = ['d4', 'e4', 'd5', 'e5', 'c4', 'f4', 'c5', 'f5'];
-
-    function evalBoardLocal() {
-      if (game.in_checkmate()) return game.turn() === 'w' ? -99999 : 99999;
-      if (game.in_draw()) return 0;
-      let s = 0;
-      const b = game.board();
-      for (let r = 0; r < 8; r++) {
-        for (let c = 0; c < 8; c++) {
-          const p = b[r][c];
-          if (!p) continue;
-          let v = pieceVals[p.type];
-          const sqName = 'abcdefgh'[c] + (8 - r);
-          if (centerSq.includes(sqName)) v += 25;
-          if (p.type === 'p') v += (p.color === 'w' ? (6 - r) * 12 : (r - 1) * 12);
-          s += (p.color === 'w' ? v : -v);
-        }
-      }
-      return s;
-    }
-
-    function searchLocal(depth, alpha, beta, maxPlayer) {
-      if (depth === 0 || game.game_over()) return evalBoardLocal();
-      const moves = game.moves({ verbose: true });
-      moves.sort((a, b) => (b.captured ? 12 : 0) - (a.captured ? 12 : 0));
-
-      if (maxPlayer) {
-        let maxEval = -Infinity;
-        for (let m of moves) {
-          game.move(m);
-          const ev = searchLocal(depth - 1, alpha, beta, false);
-          game.undo();
-          if (ev > maxEval) maxEval = ev;
-          if (ev > alpha) alpha = ev;
-          if (beta <= alpha) break;
-        }
-        return maxEval;
-      } else {
-        let minEval = Infinity;
-        for (let m of moves) {
-          game.move(m);
-          const ev = searchLocal(depth - 1, alpha, beta, true);
-          game.undo();
-          if (ev < minEval) minEval = ev;
-          if (ev < beta) beta = ev;
-          if (beta <= alpha) break;
-        }
-        return minEval;
-      }
-    }
-
-    function getLocalCandidates() {
-      const moves = game.moves({ verbose: true });
-      const isWhite = game.turn() === 'w';
-      const scored = [];
-      const depth = moves.length > 26 ? 2 : 3;
-
-      for (let m of moves) {
-        game.move(m);
-        let sc = searchLocal(depth - 1, -Infinity, Infinity, !isWhite);
-        if (m.san.includes('O-O')) sc += isWhite ? 40 : -40;
-        game.undo();
-        // تحويل النتيجة لمنظور صاحب الدور مثل Stockfish
-        const sideScore = isWhite ? sc : -sc;
-        scored.push({
-          uci: m.from + m.to + (m.promotion || ''),
-          score: sideScore,
-          isMate: Math.abs(sideScore) > 50000
-        });
-      }
-      scored.sort((a, b) => b.score - a.score);
-      return scored.slice(0, 3);
-    }
-
-    // ==================== 4. خوارزمية التمويه البشري الضامنة للفوز ====================
-    function selectStealthMove(candidates) {
-      if (!candidates || candidates.length === 0) return null;
-
-      const best = candidates[0];
-      const second = candidates[1] || null;
-      const third = candidates[2] || null;
+    <button class="btn-ctrl btn-auto" id="btn-auto">⚡ العب
